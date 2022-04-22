@@ -7,7 +7,10 @@ void Game::initializeVariables()
 {
 	this->window = nullptr;
 
+	//Game logic
+	this->endGame = false;
 	this->points = 0;
+	this->health = 10;
 	this->enemySpawnTimerMax = 15.f;
 	this->enemySpawnTimer = this->enemySpawnTimerMax;
 	this->maxEnemies = 15;
@@ -58,6 +61,11 @@ Game::~Game()
 const bool Game::running() const
 {
 	return this->window->isOpen();
+}
+
+const bool Game::getEndGame() const
+{
+	return this->endGame;
 }
 
 
@@ -141,14 +149,18 @@ void Game::updateEnemies()
 
 		//if enemy pass the bottom of screen
 		if (this->enemies[i].getPosition().y > this->window->getSize().y)
+		{
 			this->enemies.erase(this->enemies.begin() + i);
+			this->health -= 1;
+			std::cout << "Health: " << this->health << "\n";
+		}
 	}
 
 
 	//Checked if enemy is cicked
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
-		if (this->mouseHeld = false)
+		if (this->mouseHeld == false)
 		{
 			this->mouseHeld = true;
 			bool deleted = false;
@@ -162,7 +174,8 @@ void Game::updateEnemies()
 					this->enemies.erase(this->enemies.begin() + i);
 
 					//Gain points
-					this->points += 1.f;
+					this->points += 1;
+					std::cout << "Points: " << this->points << "\n";
 				}
 			}
 		}
@@ -199,9 +212,16 @@ void Game::update()
 {
 	this->pollevents();
 
-	this->updateMousePositions();
+	if (this->endGame == false)
+	{
+		this->updateMousePositions();
 
-	this->updateEnemies();
+		this->updateEnemies();
+	}
+	
+	// End game Condition
+	if(this->health <= 0)
+		this->endGame = true;
 }
 
 void Game::render()
